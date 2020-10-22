@@ -43,7 +43,7 @@ def card_to_int(card: Card):
 def int_to_card(card_num: int):
     if card_num is None:
         return None
-    
+
     suit_idx = int(card_num / len(RANKS))
     rank_idx = int(card_num % len(RANKS))
     return Card(rank=RANKS[rank_idx], suit=SUITS[suit_idx])

@@ -1,12 +1,12 @@
 import unittest
 import numpy as np
-from deck import SUITS, RANKS
+from deck import SUITS, RANKS, Card
 from gamestate import GameState
 
 class TestGameState(unittest.TestCase):
     def test_new_game_state(self):
         state = GameState()
-        state.start_new_game(seed=12345)
+        state.start_new_game_from_deck(seed=12345)
         # print(state)
         # print(state.full_info())
 
@@ -24,7 +24,7 @@ class TestGameState(unittest.TestCase):
 
     def test_game_state_copy(self):
         state = GameState()
-        state.start_new_game(seed=12345)
+        state.start_new_game_from_deck(seed=12345)
 
         # print(state.full_info())
 
@@ -66,18 +66,20 @@ class TestGameState(unittest.TestCase):
 
     def test_game_state_discard(self):
         state = GameState()
-        state.start_new_game(seed=12345)
+        state.start_new_game_from_deck(seed=12345)
 
         pile_row, pile_col = (2, 2)
         upcard_num = state.upcard_nums()[pile_row][pile_col]
         assert upcard_num in state.dead_card_nums
         assert state.pile_sizes()[pile_row][pile_col] == 2
 
-        print(state.full_info())
+        # print(state.full_info())
+        # print(state.actions())
 
         # First discard from the pile
         new_state, reward = state.discard_from_pile(pile_row, pile_col)
-        print(new_state.full_info())
+        # print(new_state.full_info())
+        # print(new_state.actions())
 
         new_upcard_num = new_state.upcard_nums()[pile_row][pile_col]
         # check card piles
@@ -104,7 +106,8 @@ class TestGameState(unittest.TestCase):
 
         # second discard from the same pile (should earn the clear bonus)
         new_state2, reward2 = new_state.discard_from_pile(pile_row, pile_col)
-        print(new_state2.full_info())
+        # print(new_state2.full_info())
+        # print(new_state2.actions())
 
         new_upcard_num2 = new_state2.upcard_nums()[pile_row][pile_col]
         # check card piles
@@ -129,6 +132,17 @@ class TestGameState(unittest.TestCase):
         assert new_upcard_num in new_state2.dead_card_nums
         # check reward
         assert reward2 == new_state.pile_clear_bonus[pile_row][pile_col]
+
+    def test_game_state_pairs(self):
+        state = GameState()
+        card_piles = [
+            [[Card("2", "s")], [Card("K", "d")], [Card("K", "s")]],
+            [[Card("3", "c")], [Card("A", "s")], [Card("6", "c")]],
+            [[Card("3", "s")], [Card("A", "c")], [Card("K", "c")]]
+        ]
+        state.start_new_game(lucky_card=Card("7", "h"), card_piles=card_piles)
+
+        state.actions()
 
 
 if __name__ == '__main__':

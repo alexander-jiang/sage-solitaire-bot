@@ -1,10 +1,20 @@
 import random
-from deck import SUITS, Deck, card_to_int, int_to_card
+from deck import SUITS, RANKS, Deck, card_to_int, int_to_card
 import numpy as np
 
+INITAL_DISCARD_REMAINING = 2
 MAX_DISCARD_REMAINING = 2
 INITIAL_PILE_SIZES = [[8, 8, 8], [7, 6, 5], [4, 3, 2]]
 PILE_CLEAR_BONUSES = [[150, 150, 150], [100, 100, 100], [50, 50, 50]]
+PAIR_REWARD = 10
+THREE_STRAIGHT_REWARD = 20
+TRIP_REWARD = 30
+FIVE_STRAIGHT_REWARD = 50
+FULL_HOUSE_REWARD = 70
+FLUSH_REWARD = 90
+QUAD_REWARD = 100
+STRAIGHT_FLUSH_REWARD = 150
+LUCKY_SUIT_MULTIPLIER = 2.0
 
 class GameState:
     def __init__(self):
@@ -15,20 +25,31 @@ class GameState:
         self.discards_remaining = 0
         self.dead_card_nums = []
 
-    def start_new_game(self, seed=None):
+    def start_new_game_from_deck(self, seed=None):
         deck = Deck(seed=seed)
 
         # Remove one card to choose the "lucky" suit
         lucky_card = deck.take(n=1)[0]
+
+        # Deal the cards for each pile
+        card_piles = []
+        for r in range(3):
+            row = []
+            for c in range(3):
+                pile_cards = deck.take(n=INITIAL_PILE_SIZES[r][c])
+                row.append(pile_cards)
+            card_piles.append(row)
+        # print(f"card_piles = {card_piles}")
+        self.start_new_game(lucky_card=lucky_card, card_piles=card_piles)
+
+    def start_new_game(self, lucky_card, card_piles):
         self.lucky_suit_idx = lucky_card.suit_idx()
         self.lucky_suit = lucky_card.suit
 
-        # Deal the cards for each pile
         upcard_nums = []
         for r in range(3):
             for c in range(3):
-                pile_cards = deck.take(n=INITIAL_PILE_SIZES[r][c])
-                pile_card_nums = [card_to_int(card) for card in pile_cards]
+                pile_card_nums = [card_to_int(card) for card in card_piles[r][c]]
                 self.card_num_piles[r][c] = pile_card_nums
                 upcard_nums.append(pile_card_nums[0])
 
@@ -36,7 +57,7 @@ class GameState:
         self.pile_clear_bonus = [[PILE_CLEAR_BONUSES[r][c] for c in range(3)] for r in range(3)]
 
         # How many discards are remaining
-        self.discards_remaining = MAX_DISCARD_REMAINING
+        self.discards_remaining = INITAL_DISCARD_REMAINING
 
         # The dead cards (includes upcards and the lucky card) i.e. all cards
         # that cannot be one of the hidden/unrevealed cards in each pile
@@ -221,19 +242,51 @@ class GameState:
 
         # generate filters for upcard ranks & suits
         upcard_nums = self.upcard_nums()
-        upcard_rank_idxs = np.zeros((3, 3)) - 1
-        upcard_suit_idxs = np.zeros((3, 3)) - 1
-        for r in range(3):
-            for c in range(3):
-                upcard = int_to_card(upcard_nums[r][c])
-                if upcard is not None:
-                    upcard_rank_idxs[r, c] = upcard.rank_idx()
-                    upcard_suit_idxs[r, c] = upcard.suit_idx()
+        # upcard_rank_idxs = np.zeros((3, 3)) - 1
+        # upcard_suit_idxs = np.zeros((3, 3)) - 1
+        # for r in range(3):
+        #     for c in range(3):
+        #         upcard = int_to_card(upcard_nums[r][c])
+        #         if upcard is not None:
+        #             upcard_rank_idxs[r, c] = upcard.rank_idx()
+        #             upcard_suit_idxs[r, c] = upcard.suit_idx()
 
         # TODO remember that the chosen piles must not all be on the same row
 
         # don't forget to increase the discards_remaining
         # for pairs/sets/quads and boats, look for enough cards of the same rank
+        card_rank_locations = {}
+        for r in range(3):
+            for c in range(3):
+                upcard = int_to_card(upcard_nums[r][c])
+                if upcard is not None:
+                    upcard_rank = RANKS[upcard.rank_idx()]
+                    if upcard_rank not in card_rank_locations:
+                        card_rank_locations[upcard_rank] = []
+                    card_rank_locations[upcard_rank].append((r, c))
+        print(f"card_rank_locations = {card_rank_locations}")
+
+        pair_ranks = set([])
+        trip_ranks = set([])
+        quad_ranks = set([])
+        for card_rank in card_rank_locations:
+            if len(card_rank_locations[card_rank]) >= 2:
+                pair_ranks.add(card_rank)
+            if len(card_rank_locations[card_rank]) >= 3:
+                trip_ranks.add(card_rank)
+            if len(card_rank_locations[card_rank]) >= 4:
+                quad_ranks.add(card_rank)
+        full_house_rank_pairs = set([])
+        for trip_rank in trip_ranks:
+            for pair_rank in pair_ranks:
+                if pair_rank == trip_rank:
+                    continue
+                full_house_ranks = (trip_rank, pair_rank)
+                full_house_rank_pairs.add(full_house_ranks)
+        print(f"pair_ranks = {pair_ranks}")
+        print(f"trip_ranks = {trip_ranks}")
+        print(f"quad_ranks = {quad_ranks}")
+        print(f"full_house_rank_pairs = {full_house_rank_pairs}")
 
         # for 3-straights and 5-straights, look for cards of adjacent ranks (remember that Ace can play high or low)
 
