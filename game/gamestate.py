@@ -26,7 +26,7 @@ class GameState:
         self.lucky_suit_idx = None
         self.lucky_suit = None
         self.discards_remaining = 0
-        self.dead_card_nums = []
+        self.dead_card_nums = set([])
 
     def start_new_game_from_deck(self, seed=None):
         deck = Deck(seed=seed)
@@ -65,8 +65,8 @@ class GameState:
 
         # The dead cards (includes upcards and the lucky card) i.e. all cards
         # that cannot be one of the hidden/unrevealed cards in each pile
-        self.dead_card_nums = [card_to_int(lucky_card)]
-        self.dead_card_nums.extend(upcard_nums)
+        self.dead_card_nums = set([card_to_int(lucky_card)])
+        self.dead_card_nums.update(upcard_nums)
 
     def __eq__(self, other):
         return (
@@ -164,7 +164,7 @@ class GameState:
         new_state.lucky_suit_idx = self.lucky_suit_idx
         new_state.lucky_suit = self.lucky_suit
         new_state.discards_remaining = self.discards_remaining
-        new_state.dead_card_nums = list(self.dead_card_nums)
+        new_state.dead_card_nums = set(list(self.dead_card_nums))
         return new_state
 
     def discard_from_pile(self, r, c):
@@ -192,7 +192,7 @@ class GameState:
         # and the revealed card is added to the dead cards list (revealing a new upcard)
         if not new_state.is_pile_empty(r, c):
             revealed_upcard_num = new_state.card_num_piles[r][c][0]
-            new_state.dead_card_nums.append(revealed_upcard_num)
+            new_state.dead_card_nums.add(revealed_upcard_num)
 
         return (new_state, reward)
 
@@ -228,7 +228,7 @@ class GameState:
             # and the revealed card is added to the dead cards list (revealing a new upcard)
             if not new_state.is_pile_empty(r, c):
                 revealed_upcard_num = new_state.card_num_piles[r][c][0]
-                new_state.dead_card_nums.append(revealed_upcard_num)
+                new_state.dead_card_nums.add(revealed_upcard_num)
 
         return new_state
 
@@ -272,7 +272,7 @@ class GameState:
         for card_rank in card_rank_locations:
             if len(card_rank_locations[card_rank]) >= 2:
                 pair_ranks.add(card_rank)
-        print(f"pair_ranks = {pair_ranks}")
+        # print(f"pair_ranks = {pair_ranks}")
 
         pair_hands = []
         for pair_rank in pair_ranks:
@@ -283,7 +283,7 @@ class GameState:
         # the chosen piles must not all be on the same row
         pair_hands = self._ignore_invalid_hands(pair_hands)
 
-        print(f"pair_hands = {pair_hands}")
+        # print(f"pair_hands = {pair_hands}")
         return pair_hands
 
     def _get_trip_hands(self):
@@ -303,7 +303,7 @@ class GameState:
         for card_rank in card_rank_locations:
             if len(card_rank_locations[card_rank]) >= 3:
                 trip_ranks.add(card_rank)
-        print(f"trip_ranks = {trip_ranks}")
+        # print(f"trip_ranks = {trip_ranks}")
 
         trip_hands = []
         for trip_rank in trip_ranks:
@@ -314,7 +314,7 @@ class GameState:
         # the chosen piles must not all be on the same row
         trip_hands = self._ignore_invalid_hands(trip_hands)
 
-        print(f"trip_hands = {trip_hands}")
+        # print(f"trip_hands = {trip_hands}")
         return trip_hands
 
     def _get_quad_hands(self):
@@ -334,7 +334,7 @@ class GameState:
         for card_rank in card_rank_locations:
             if len(card_rank_locations[card_rank]) >= 4:
                 quad_ranks.add(card_rank)
-        print(f"quad_ranks = {quad_ranks}")
+        # print(f"quad_ranks = {quad_ranks}")
 
         quad_hands = []
         for quad_rank in quad_ranks:
@@ -345,7 +345,7 @@ class GameState:
         # the chosen piles must not all be on the same row
         quad_hands = self._ignore_invalid_hands(quad_hands)
 
-        print(f"quad_hands = {quad_hands}")
+        # print(f"quad_hands = {quad_hands}")
         return quad_hands
 
     def _get_full_house_hands(self):
@@ -376,7 +376,7 @@ class GameState:
                     continue
                 full_house_ranks = (trip_rank, pair_rank)
                 full_house_rank_pairs.add(full_house_ranks)
-        print(f"full_house_rank_pairs = {full_house_rank_pairs}")
+        # print(f"full_house_rank_pairs = {full_house_rank_pairs}")
 
         full_house_hands = []
         for trip_rank, pair_rank in full_house_rank_pairs:
@@ -394,8 +394,8 @@ class GameState:
         # the chosen piles must not all be on the same row
         full_house_hands = self._ignore_invalid_hands(full_house_hands)
 
-        print("full_house_hands: ")
-        pprint(full_house_hands)
+        # print("full_house_hands: ")
+        # pprint(full_house_hands)
         return full_house_hands
 
     def _get_sm_straight_hands(self):
@@ -430,7 +430,7 @@ class GameState:
         # the chosen piles must not all be on the same row
         sm_straight_hands = self._ignore_invalid_hands(sm_straight_hands)
 
-        print(f"sm_straight_hands = {sm_straight_hands}")
+        # print(f"sm_straight_hands = {sm_straight_hands}")
         return sm_straight_hands
 
     def _get_lg_straight_hands(self):
@@ -465,7 +465,7 @@ class GameState:
         # the chosen piles must not all be on the same row
         lg_straight_hands = self._ignore_invalid_hands(lg_straight_hands)
 
-        print(f"lg_straight_hands = {lg_straight_hands}")
+        # print(f"lg_straight_hands = {lg_straight_hands}")
         return lg_straight_hands
 
     def _get_flush_hands(self):
@@ -485,7 +485,7 @@ class GameState:
         for card_suit in card_suit_locations:
             if len(card_suit_locations[card_suit]) >= 5:
                 flush_suits.add(card_suit)
-        print(f"flush_suits = {flush_suits}")
+        # print(f"flush_suits = {flush_suits}")
 
         flush_hands = []
         for flush_suit in flush_suits:
@@ -493,7 +493,7 @@ class GameState:
             hands = itertools.combinations(suit_locations, 5)
             flush_hands.extend([set(hand) for hand in hands])
 
-        print(f"flush_hands = {flush_hands}")
+        # print(f"flush_hands = {flush_hands}")
         return flush_hands
 
     def _get_straight_flush_hands(self):
@@ -515,7 +515,7 @@ class GameState:
             if valid_hand:
                 straight_flush_hands.append(hand)
 
-        print(f"straight_flush_hands = {straight_flush_hands}")
+        # print(f"straight_flush_hands = {straight_flush_hands}")
         return straight_flush_hands
 
     def _is_lucky_hand(self, piles):

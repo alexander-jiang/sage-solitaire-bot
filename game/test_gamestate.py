@@ -136,6 +136,213 @@ class TestGameState(unittest.TestCase):
     def test_actions(self):
         state = GameState()
         card_piles = [
+            [[Card("2", "s"), Card("Q", "s")], [Card("K", "h"), Card("7", "d")], [Card("K", "s"), Card("Q", "c")]],
+            [[Card("3", "c"), Card("3", "h")], [Card("A", "s"), Card("T", "c")], [Card("6", "s"), Card("6", "c")]],
+            [[Card("3", "s"), Card("2", "d")], [Card("A", "c"), Card("9", "c")], [Card("K", "c"), Card("T", "h")]]
+        ]
+        state.start_new_game(lucky_card=Card("7", "h"), card_piles=card_piles)
+        state.discards_remaining = 1
+
+        state_actions = state.actions()
+        # print(state_actions)
+        assert len(state_actions) == 21
+
+        # 4 pairs (can't pick both Kings on the top row)
+        new_state = state.copy()
+        new_state.card_num_piles[0][1] = state.card_num_piles[0][1][1:]
+        new_state.card_num_piles[2][2] = state.card_num_piles[2][2][1:]
+        new_state.discards_remaining = 2
+        new_state.dead_card_nums.add(state.card_num_piles[0][1][1])
+        new_state.dead_card_nums.add(state.card_num_piles[2][2][1])
+        assert (set([(0, 1), (2, 2)]), new_state, 20) in state_actions # note the lucky bonus
+
+        new_state = state.copy()
+        new_state.card_num_piles[0][2] = state.card_num_piles[0][2][1:]
+        new_state.card_num_piles[2][2] = state.card_num_piles[2][2][1:]
+        new_state.discards_remaining = 2
+        new_state.dead_card_nums.add(state.card_num_piles[0][2][1])
+        new_state.dead_card_nums.add(state.card_num_piles[2][2][1])
+        assert (set([(0, 2), (2, 2)]), new_state, 10) in state_actions
+
+        new_state = state.copy()
+        new_state.card_num_piles[1][0] = state.card_num_piles[1][0][1:]
+        new_state.card_num_piles[2][0] = state.card_num_piles[2][0][1:]
+        new_state.discards_remaining = 2
+        new_state.dead_card_nums.add(state.card_num_piles[1][0][1])
+        new_state.dead_card_nums.add(state.card_num_piles[2][0][1])
+        assert (set([(1, 0), (2, 0)]), new_state, 10) in state_actions
+
+        new_state = state.copy()
+        new_state.card_num_piles[1][1] = state.card_num_piles[1][1][1:]
+        new_state.card_num_piles[2][1] = state.card_num_piles[2][1][1:]
+        new_state.discards_remaining = 2
+        new_state.dead_card_nums.add(state.card_num_piles[1][1][1])
+        new_state.dead_card_nums.add(state.card_num_piles[2][1][1])
+        assert (set([(1, 1), (2, 1)]), new_state, 10) in state_actions
+
+        # this isn't a valid hand (the cards are on the same row)
+        new_state = state.copy()
+        new_state.card_num_piles[0][1] = state.card_num_piles[0][1][1:]
+        new_state.card_num_piles[0][2] = state.card_num_piles[0][2][1:]
+        new_state.discards_remaining = 2
+        new_state.dead_card_nums.add(state.card_num_piles[0][1][1])
+        new_state.dead_card_nums.add(state.card_num_piles[0][2][1])
+        assert (set([(0, 1), (0, 2)]), new_state, 20) not in state_actions
+
+        # 1 trips
+        new_state = state.copy()
+        new_state.card_num_piles[0][1] = state.card_num_piles[0][1][1:]
+        new_state.card_num_piles[0][2] = state.card_num_piles[0][2][1:]
+        new_state.card_num_piles[2][2] = state.card_num_piles[2][2][1:]
+        new_state.discards_remaining = 2
+        new_state.dead_card_nums.add(state.card_num_piles[0][1][1])
+        new_state.dead_card_nums.add(state.card_num_piles[0][2][1])
+        new_state.dead_card_nums.add(state.card_num_piles[2][2][1])
+        assert (set([(0, 1), (0, 2), (2, 2)]), new_state, 60) in state_actions # note the lucky bonus
+
+        # 2 full houses
+        new_state = state.copy()
+        new_state.card_num_piles[0][1] = state.card_num_piles[0][1][1:]
+        new_state.card_num_piles[0][2] = state.card_num_piles[0][2][1:]
+        new_state.card_num_piles[2][2] = state.card_num_piles[2][2][1:]
+        new_state.card_num_piles[1][1] = state.card_num_piles[1][1][1:]
+        new_state.card_num_piles[2][1] = state.card_num_piles[2][1][1:]
+        new_state.discards_remaining = 2
+        new_state.dead_card_nums.add(state.card_num_piles[0][1][1])
+        new_state.dead_card_nums.add(state.card_num_piles[0][2][1])
+        new_state.dead_card_nums.add(state.card_num_piles[2][2][1])
+        new_state.dead_card_nums.add(state.card_num_piles[1][1][1])
+        new_state.dead_card_nums.add(state.card_num_piles[2][1][1])
+        assert (set([(0, 1), (0, 2), (2, 2), (1, 1), (2, 1)]), new_state, 140) in state_actions # note the lucky bonus
+
+        new_state = state.copy()
+        new_state.card_num_piles[0][1] = state.card_num_piles[0][1][1:]
+        new_state.card_num_piles[0][2] = state.card_num_piles[0][2][1:]
+        new_state.card_num_piles[2][2] = state.card_num_piles[2][2][1:]
+        new_state.card_num_piles[1][0] = state.card_num_piles[1][0][1:]
+        new_state.card_num_piles[2][0] = state.card_num_piles[2][0][1:]
+        new_state.discards_remaining = 2
+        new_state.dead_card_nums.add(state.card_num_piles[0][1][1])
+        new_state.dead_card_nums.add(state.card_num_piles[0][2][1])
+        new_state.dead_card_nums.add(state.card_num_piles[2][2][1])
+        new_state.dead_card_nums.add(state.card_num_piles[1][0][1])
+        new_state.dead_card_nums.add(state.card_num_piles[2][0][1])
+        assert (set([(0, 1), (0, 2), (2, 2), (1, 0), (2, 0)]), new_state, 140) in state_actions # note the lucky bonus
+
+        # 4 three-straights
+        new_state = state.copy()
+        new_state.card_num_piles[0][0] = state.card_num_piles[0][0][1:]
+        new_state.card_num_piles[1][0] = state.card_num_piles[1][0][1:]
+        new_state.card_num_piles[1][1] = state.card_num_piles[1][1][1:]
+        new_state.discards_remaining = 2
+        new_state.dead_card_nums.add(state.card_num_piles[0][0][1])
+        new_state.dead_card_nums.add(state.card_num_piles[1][0][1])
+        new_state.dead_card_nums.add(state.card_num_piles[1][1][1])
+        assert (set([(0, 0), (1, 0), (1, 1)]), new_state, 20) in state_actions
+
+        new_state = state.copy()
+        new_state.card_num_piles[0][0] = state.card_num_piles[0][0][1:]
+        new_state.card_num_piles[2][0] = state.card_num_piles[2][0][1:]
+        new_state.card_num_piles[1][1] = state.card_num_piles[1][1][1:]
+        new_state.discards_remaining = 2
+        new_state.dead_card_nums.add(state.card_num_piles[0][0][1])
+        new_state.dead_card_nums.add(state.card_num_piles[2][0][1])
+        new_state.dead_card_nums.add(state.card_num_piles[1][1][1])
+        assert (set([(0, 0), (2, 0), (1, 1)]), new_state, 20) in state_actions
+
+        new_state = state.copy()
+        new_state.card_num_piles[0][0] = state.card_num_piles[0][0][1:]
+        new_state.card_num_piles[1][0] = state.card_num_piles[1][0][1:]
+        new_state.card_num_piles[2][1] = state.card_num_piles[2][1][1:]
+        new_state.discards_remaining = 2
+        new_state.dead_card_nums.add(state.card_num_piles[0][0][1])
+        new_state.dead_card_nums.add(state.card_num_piles[1][0][1])
+        new_state.dead_card_nums.add(state.card_num_piles[2][1][1])
+        assert (set([(0, 0), (1, 0), (2, 1)]), new_state, 20) in state_actions
+
+        new_state = state.copy()
+        new_state.card_num_piles[0][0] = state.card_num_piles[0][0][1:]
+        new_state.card_num_piles[2][0] = state.card_num_piles[2][0][1:]
+        new_state.card_num_piles[2][1] = state.card_num_piles[2][1][1:]
+        new_state.discards_remaining = 2
+        new_state.dead_card_nums.add(state.card_num_piles[0][0][1])
+        new_state.dead_card_nums.add(state.card_num_piles[2][0][1])
+        new_state.dead_card_nums.add(state.card_num_piles[2][1][1])
+        assert (set([(0, 0), (2, 0), (2, 1)]), new_state, 20) in state_actions
+
+        # 1 flush
+        new_state = state.copy()
+        new_state.card_num_piles[0][0] = state.card_num_piles[0][0][1:]
+        new_state.card_num_piles[0][2] = state.card_num_piles[0][2][1:]
+        new_state.card_num_piles[1][1] = state.card_num_piles[1][1][1:]
+        new_state.card_num_piles[1][2] = state.card_num_piles[1][2][1:]
+        new_state.card_num_piles[2][0] = state.card_num_piles[2][0][1:]
+        new_state.discards_remaining = 2
+        new_state.dead_card_nums.add(state.card_num_piles[0][0][1])
+        new_state.dead_card_nums.add(state.card_num_piles[0][2][1])
+        new_state.dead_card_nums.add(state.card_num_piles[1][1][1])
+        new_state.dead_card_nums.add(state.card_num_piles[1][2][1])
+        new_state.dead_card_nums.add(state.card_num_piles[2][0][1])
+        assert (set([(0, 0), (0, 2), (1, 1), (1, 2), (2, 0)]), new_state, 90) in state_actions
+
+        # 9 discard actions
+        new_state = state.copy()
+        new_state.card_num_piles[0][0] = state.card_num_piles[0][0][1:]
+        new_state.discards_remaining = 0
+        new_state.dead_card_nums.add(state.card_num_piles[0][0][1])
+        assert (set([(0, 0)]), new_state, 0) in state_actions
+
+        new_state = state.copy()
+        new_state.card_num_piles[0][1] = state.card_num_piles[0][1][1:]
+        new_state.discards_remaining = 0
+        new_state.dead_card_nums.add(state.card_num_piles[0][1][1])
+        assert (set([(0, 1)]), new_state, 0) in state_actions
+
+        new_state = state.copy()
+        new_state.card_num_piles[0][2] = state.card_num_piles[0][2][1:]
+        new_state.discards_remaining = 0
+        new_state.dead_card_nums.add(state.card_num_piles[0][2][1])
+        assert (set([(0, 2)]), new_state, 0) in state_actions
+
+        new_state = state.copy()
+        new_state.card_num_piles[1][0] = state.card_num_piles[1][0][1:]
+        new_state.discards_remaining = 0
+        new_state.dead_card_nums.add(state.card_num_piles[1][0][1])
+        assert (set([(1, 0)]), new_state, 0) in state_actions
+
+        new_state = state.copy()
+        new_state.card_num_piles[1][1] = state.card_num_piles[1][1][1:]
+        new_state.discards_remaining = 0
+        new_state.dead_card_nums.add(state.card_num_piles[1][1][1])
+        assert (set([(1, 1)]), new_state, 0) in state_actions
+
+        new_state = state.copy()
+        new_state.card_num_piles[1][2] = state.card_num_piles[1][2][1:]
+        new_state.discards_remaining = 0
+        new_state.dead_card_nums.add(state.card_num_piles[1][2][1])
+        assert (set([(1, 2)]), new_state, 0) in state_actions
+
+        new_state = state.copy()
+        new_state.card_num_piles[2][0] = state.card_num_piles[2][0][1:]
+        new_state.discards_remaining = 0
+        new_state.dead_card_nums.add(state.card_num_piles[2][0][1])
+        assert (set([(2, 0)]), new_state, 0) in state_actions
+
+        new_state = state.copy()
+        new_state.card_num_piles[2][1] = state.card_num_piles[2][1][1:]
+        new_state.discards_remaining = 0
+        new_state.dead_card_nums.add(state.card_num_piles[2][1][1])
+        assert (set([(2, 1)]), new_state, 0) in state_actions
+
+        new_state = state.copy()
+        new_state.card_num_piles[2][2] = state.card_num_piles[2][2][1:]
+        new_state.discards_remaining = 0
+        new_state.dead_card_nums.add(state.card_num_piles[2][2][1])
+        assert (set([(2, 2)]), new_state, 0) in state_actions
+
+    def test_discard_clear_bonus(self):
+        state = GameState()
+        card_piles = [
             [[Card("2", "s")], [Card("K", "h")], [Card("K", "s")]],
             [[Card("3", "c")], [Card("A", "s")], [Card("6", "s")]],
             [[Card("3", "s")], [Card("A", "c")], [Card("K", "c")]]
@@ -144,6 +351,7 @@ class TestGameState(unittest.TestCase):
         state.discards_remaining = 1
 
         state_actions = state.actions()
+        # print(state_actions)
         assert len(state_actions) == 21
 
         # 4 pairs (can't pick both Kings on the top row)
