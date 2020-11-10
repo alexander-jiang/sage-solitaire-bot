@@ -84,6 +84,19 @@ class GameState:
                     if not self.is_pile_empty(r, c):
                         return False
 
+        non_empty_rows = set([])
+        for r in range(3):
+            for c in range(3):
+                if len(self.card_num_piles[r][c]) > 0:
+                    non_empty_rows.add(r)
+        if len(non_empty_rows) == 0:
+            # if all rows are empty (all piles are empty), the game is over.
+            return True
+        elif len(non_empty_rows) == 1 and self.discards_remaining == 0:
+            # if there are no discards remaining and the only non-empty
+            # piles are all in one row, the game is over
+            return True
+
         # check whether there are any actions available
         return len(self.actions()) == 0
 
@@ -530,6 +543,20 @@ class GameState:
                 return True
         return False
 
+    def _get_hand_reward(self, hand_piles, hand_base_reward):
+        reward = hand_base_reward
+
+        # account for lucky suit
+        if self._is_lucky_hand(hand_piles):
+            reward *= LUCKY_SUIT_MULTIPLIER
+
+        # if the hand also clears a pile, add the pile clear bonus to the reward
+        for pile in hand_piles:
+            pile_row, pile_col = pile
+            if len(self.card_num_piles[pile_row][pile_col]) == 1:
+                reward += self.pile_clear_bonus[pile_row][pile_col]
+        return reward
+
     def actions(self):
         action_state_rewards = []
         if self.discards_remaining > 0:
@@ -539,6 +566,18 @@ class GameState:
                     if not self.is_pile_empty(r, c):
                         new_state, reward = self.discard_from_pile(r, c)
                         action_state_rewards.append((set([(r, c)]), new_state, reward))
+
+        # if the only non-empty piles are all in one row, there are no valid hands
+        non_empty_rows = set([])
+        for r in range(3):
+            for c in range(3):
+                if len(self.card_num_piles[r][c]) > 0:
+                    non_empty_rows.add(r)
+        if len(non_empty_rows) == 1:
+            return action_state_rewards
+
+        # TODO is it more efficient to just brute force check different combinations of 1, 2, 3, 4, or 5 piles?
+        # probably only if the number of piles is low and if there's only two rows with non-empty piles
 
         # generate filters for upcard ranks & suits
         upcard_nums = self.upcard_nums()
@@ -553,70 +592,53 @@ class GameState:
 
         # generate a list of possible hands given the current board state
         # and for each hand, generate the (hand locations, successor state, reward) tuple
-        # TODO account for lucky suit
 
         pair_hands = self._get_pair_hands()
         for hand_piles in pair_hands:
             new_state = self.make_hand(hand_piles)
-            reward = PAIR_REWARD
-            if self._is_lucky_hand(hand_piles):
-                reward *= LUCKY_SUIT_MULTIPLIER
+            reward = self._get_hand_reward(hand_piles, PAIR_REWARD)
             action_state_rewards.append((hand_piles, new_state, reward))
 
         trip_hands = self._get_trip_hands()
         for hand_piles in trip_hands:
             new_state = self.make_hand(hand_piles)
-            reward = TRIP_REWARD
-            if self._is_lucky_hand(hand_piles):
-                reward *= LUCKY_SUIT_MULTIPLIER
+            reward = self._get_hand_reward(hand_piles, TRIP_REWARD)
             action_state_rewards.append((hand_piles, new_state, reward))
 
         quad_hands = self._get_quad_hands()
         for hand_piles in quad_hands:
             new_state = self.make_hand(hand_piles)
-            reward = QUAD_REWARD
-            if self._is_lucky_hand(hand_piles):
-                reward *= LUCKY_SUIT_MULTIPLIER
+            reward = self._get_hand_reward(hand_piles, QUAD_REWARD)
             action_state_rewards.append((hand_piles, new_state, reward))
 
         full_house_hands = self._get_full_house_hands()
         for hand_piles in full_house_hands:
             new_state = self.make_hand(hand_piles)
-            reward = FULL_HOUSE_REWARD
-            if self._is_lucky_hand(hand_piles):
-                reward *= LUCKY_SUIT_MULTIPLIER
+            reward = self._get_hand_reward(hand_piles, FULL_HOUSE_REWARD)
             action_state_rewards.append((hand_piles, new_state, reward))
 
         sm_straight_hands = self._get_sm_straight_hands()
         for hand_piles in sm_straight_hands:
             new_state = self.make_hand(hand_piles)
-            reward = THREE_STRAIGHT_REWARD
-            if self._is_lucky_hand(hand_piles):
-                reward *= LUCKY_SUIT_MULTIPLIER
+            reward = self._get_hand_reward(hand_piles, THREE_STRAIGHT_REWARD)
             action_state_rewards.append((hand_piles, new_state, reward))
 
         lg_straight_hands = self._get_lg_straight_hands()
         for hand_piles in lg_straight_hands:
             new_state = self.make_hand(hand_piles)
-            reward = FIVE_STRAIGHT_REWARD
-            if self._is_lucky_hand(hand_piles):
-                reward *= LUCKY_SUIT_MULTIPLIER
+            reward = self._get_hand_reward(hand_piles, FIVE_STRAIGHT_REWARD)
             action_state_rewards.append((hand_piles, new_state, reward))
 
         flush_hands = self._get_flush_hands()
         for hand_piles in flush_hands:
             new_state = self.make_hand(hand_piles)
-            reward = FLUSH_REWARD
-            if self._is_lucky_hand(hand_piles):
-                reward *= LUCKY_SUIT_MULTIPLIER
+            reward = self._get_hand_reward(hand_piles, FLUSH_REWARD)
             action_state_rewards.append((hand_piles, new_state, reward))
 
         straight_flush_hands = self._get_straight_flush_hands()
         for hand_piles in straight_flush_hands:
             new_state = self.make_hand(hand_piles)
-            reward = STRAIGHT_FLUSH_REWARD
-            if self._is_lucky_hand(hand_piles):
-                reward *= LUCKY_SUIT_MULTIPLIER
+            reward = self._get_hand_reward(hand_piles, STRAIGHT_FLUSH_REWARD)
             action_state_rewards.append((hand_piles, new_state, reward))
 
         return action_state_rewards

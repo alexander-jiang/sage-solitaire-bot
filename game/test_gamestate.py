@@ -359,32 +359,32 @@ class TestGameState(unittest.TestCase):
         new_state.card_num_piles[0][1] = []
         new_state.card_num_piles[2][2] = []
         new_state.discards_remaining = 2
-        assert (set([(0, 1), (2, 2)]), new_state, 20) in state_actions # note the lucky bonus
+        assert (set([(0, 1), (2, 2)]), new_state, 20 + 150 + 50) in state_actions # note the lucky bonus
 
         new_state = state.copy()
         new_state.card_num_piles[0][2] = []
         new_state.card_num_piles[2][2] = []
         new_state.discards_remaining = 2
-        assert (set([(0, 2), (2, 2)]), new_state, 10) in state_actions
+        assert (set([(0, 2), (2, 2)]), new_state, 10 + 150 + 50) in state_actions
 
         new_state = state.copy()
         new_state.card_num_piles[1][0] = []
         new_state.card_num_piles[2][0] = []
         new_state.discards_remaining = 2
-        assert (set([(1, 0), (2, 0)]), new_state, 10) in state_actions
+        assert (set([(1, 0), (2, 0)]), new_state, 10 + 100 + 50) in state_actions
 
         new_state = state.copy()
         new_state.card_num_piles[1][1] = []
         new_state.card_num_piles[2][1] = []
         new_state.discards_remaining = 2
-        assert (set([(1, 1), (2, 1)]), new_state, 10) in state_actions
+        assert (set([(1, 1), (2, 1)]), new_state, 10 + 100 + 50) in state_actions
 
         # this isn't a valid hand (the cards are on the same row)
         new_state = state.copy()
         new_state.card_num_piles[0][1] = []
         new_state.card_num_piles[0][2] = []
         new_state.discards_remaining = 2
-        assert (set([(0, 1), (0, 2)]), new_state, 20) not in state_actions
+        assert (set([(0, 1), (0, 2)]), new_state, 20 + 150 + 150) not in state_actions
 
         # 1 trips
         new_state = state.copy()
@@ -392,7 +392,7 @@ class TestGameState(unittest.TestCase):
         new_state.card_num_piles[0][2] = []
         new_state.card_num_piles[2][2] = []
         new_state.discards_remaining = 2
-        assert (set([(0, 1), (0, 2), (2, 2)]), new_state, 60) in state_actions # note the lucky bonus
+        assert (set([(0, 1), (0, 2), (2, 2)]), new_state, 60 + 150 + 150 + 50) in state_actions # note the lucky bonus
 
         # 2 full houses
         new_state = state.copy()
@@ -402,7 +402,7 @@ class TestGameState(unittest.TestCase):
         new_state.card_num_piles[1][1] = []
         new_state.card_num_piles[2][1] = []
         new_state.discards_remaining = 2
-        assert (set([(0, 1), (0, 2), (2, 2), (1, 1), (2, 1)]), new_state, 140) in state_actions # note the lucky bonus
+        assert (set([(0, 1), (0, 2), (2, 2), (1, 1), (2, 1)]), new_state, 140 + 150 + 150 + 50 + 100 + 50) in state_actions # note the lucky bonus
 
         new_state = state.copy()
         new_state.card_num_piles[0][1] = []
@@ -411,7 +411,7 @@ class TestGameState(unittest.TestCase):
         new_state.card_num_piles[1][0] = []
         new_state.card_num_piles[2][0] = []
         new_state.discards_remaining = 2
-        assert (set([(0, 1), (0, 2), (2, 2), (1, 0), (2, 0)]), new_state, 140) in state_actions # note the lucky bonus
+        assert (set([(0, 1), (0, 2), (2, 2), (1, 0), (2, 0)]), new_state, 140 + 150 + 150 + 50 + 100 + 50) in state_actions # note the lucky bonus
 
         # 4 three-straights
         new_state = state.copy()
@@ -419,28 +419,28 @@ class TestGameState(unittest.TestCase):
         new_state.card_num_piles[1][0] = []
         new_state.card_num_piles[1][1] = []
         new_state.discards_remaining = 2
-        assert (set([(0, 0), (1, 0), (1, 1)]), new_state, 20) in state_actions
+        assert (set([(0, 0), (1, 0), (1, 1)]), new_state, 20 + 150 + 100 + 100) in state_actions
 
         new_state = state.copy()
         new_state.card_num_piles[0][0] = []
         new_state.card_num_piles[2][0] = []
         new_state.card_num_piles[1][1] = []
         new_state.discards_remaining = 2
-        assert (set([(0, 0), (2, 0), (1, 1)]), new_state, 20) in state_actions
+        assert (set([(0, 0), (2, 0), (1, 1)]), new_state, 20 + 150 + 50 + 100) in state_actions
 
         new_state = state.copy()
         new_state.card_num_piles[0][0] = []
         new_state.card_num_piles[1][0] = []
         new_state.card_num_piles[2][1] = []
         new_state.discards_remaining = 2
-        assert (set([(0, 0), (1, 0), (2, 1)]), new_state, 20) in state_actions
+        assert (set([(0, 0), (1, 0), (2, 1)]), new_state, 20 + 150 + 100 + 50) in state_actions
 
         new_state = state.copy()
         new_state.card_num_piles[0][0] = []
         new_state.card_num_piles[2][0] = []
         new_state.card_num_piles[2][1] = []
         new_state.discards_remaining = 2
-        assert (set([(0, 0), (2, 0), (2, 1)]), new_state, 20) in state_actions
+        assert (set([(0, 0), (2, 0), (2, 1)]), new_state, 20 + 150 + 50 + 50) in state_actions
 
         # 1 flush
         new_state = state.copy()
@@ -450,7 +450,7 @@ class TestGameState(unittest.TestCase):
         new_state.card_num_piles[1][2] = []
         new_state.card_num_piles[2][0] = []
         new_state.discards_remaining = 2
-        assert (set([(0, 0), (0, 2), (1, 1), (1, 2), (2, 0)]), new_state, 90) in state_actions
+        assert (set([(0, 0), (0, 2), (1, 1), (1, 2), (2, 0)]), new_state, 90 + 150 + 150 + 100 + 100 + 50) in state_actions
 
         # 9 discard actions
         new_state = state.copy()
@@ -498,6 +498,93 @@ class TestGameState(unittest.TestCase):
         new_state.discards_remaining = 0
         assert (set([(2, 2)]), new_state, 50) in state_actions
 
+    def test_near_game_end_actions(self):
+        turn20_state = GameState()
+        card_piles = [
+            [[], [], [Card("5", "d")]],
+            [[Card("9", "d"), Card("4", "h")], [Card("4", "d"), Card("T", "d")], [Card("K", "h")]],
+            [[Card("8", "c")], [], [Card("T", "h")]]
+        ]
+        turn20_state.start_new_game(lucky_card=Card("7", "h"), card_piles=card_piles)
+        turn20_state.discards_remaining = 2
+
+        turn20_state_actions = turn20_state.actions()
+        assert len(turn20_state_actions) == 7 # six piles to discard from, only one possible hand
+
+        turn21_state = turn20_state.copy()
+        turn21_state.card_num_piles[0][2] = turn20_state.card_num_piles[0][2][1:]
+        turn21_state.discards_remaining = 1
+        assert (set([(0, 2)]), turn21_state, 150) in turn20_state_actions
+
+        turn21_state_actions = turn21_state.actions()
+        assert len(turn21_state_actions) == 6 # five piles to discard from, only one possible hand
+
+        turn22_state = turn21_state.copy()
+        turn22_state.card_num_piles[1][0] = turn21_state.card_num_piles[1][0][1:]
+        turn22_state.card_num_piles[2][0] = turn21_state.card_num_piles[2][0][1:]
+        turn22_state.card_num_piles[2][2] = turn21_state.card_num_piles[2][2][1:]
+        turn22_state.discards_remaining = 2
+        turn22_state.dead_card_nums.add(turn21_state.card_num_piles[1][0][1])
+        # a three-straight with lucky bonus and 2x 50 pt pile clear bonuses
+        assert (set([(1, 0), (2, 0), (2, 2)]), turn22_state, 40 + 50 + 50) in turn21_state_actions
+
+        turn22_state_actions = turn22_state.actions()
+        assert len(turn22_state_actions) == 3 # only three non-empty piles left, all on the same row
+
+        turn23_state = turn22_state.copy()
+        turn23_state.card_num_piles[1][0] = turn22_state.card_num_piles[1][0][1:]
+        turn23_state.discards_remaining = 1
+        assert (set([(1, 0)]), turn23_state, 100) in turn22_state_actions
+
+        turn23_state_actions = turn23_state.actions()
+        assert len(turn23_state_actions) == 2 # only two non-empty piles left, both on the same row
+
+        turn24_state = turn23_state.copy()
+        turn24_state.card_num_piles[1][2] = turn23_state.card_num_piles[1][2][1:]
+        turn24_state.discards_remaining = 0
+        assert (set([(1, 2)]), turn24_state, 100) in turn23_state_actions
+
+        assert len(turn24_state.actions()) == 0
+        assert turn24_state.is_game_over()
+
+    def test_empty_piles_game_over(self):
+        state = GameState()
+        card_piles = [
+            [[], [], []],
+            [[], [], []],
+            [[], [], []]
+        ]
+        state.start_new_game(lucky_card=Card("Q", "s"), card_piles=card_piles)
+        state.discards_remaining = 2
+
+        assert len(state.actions()) == 0
+        assert state.is_game_over()
+
+    def test_all_piles_same_row_game_over(self):
+        state = GameState()
+        card_piles = [
+            [[Card("A", "s")], [Card("2", "s")], [Card("3", "s")]],
+            [[], [], []],
+            [[], [], []]
+        ]
+        state.start_new_game(lucky_card=Card("4", "s"), card_piles=card_piles)
+        state.discards_remaining = 0
+
+        assert len(state.actions()) == 0
+        assert state.is_game_over()
+
+    def test_all_piles_same_row_not_game_over(self):
+        state = GameState()
+        card_piles = [
+            [[Card("A", "s")], [Card("2", "s")], [Card("3", "s")]],
+            [[], [], []],
+            [[], [], []]
+        ]
+        state.start_new_game(lucky_card=Card("4", "s"), card_piles=card_piles)
+        state.discards_remaining = 1
+
+        assert len(state.actions()) == 3
+        assert not state.is_game_over()
 
 if __name__ == '__main__':
     unittest.main()
