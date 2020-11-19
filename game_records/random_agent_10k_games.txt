@@ -1,0 +1,7 @@
+Max Score = 1400.0
+Min Score = 0.0
+Average Score = 466.834
+Score Standard Deviation = 215.60824762517782
+Game Clear Rate = 0.0007
+Avg Score for Cleared Games = 1325.7142857142858
+Avg Score for Uncleared Games = 466.2323626538577

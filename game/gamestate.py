@@ -77,6 +77,22 @@ class GameState:
             self.dead_card_nums == other.dead_card_nums
         )
 
+    def __hash__(self):
+        flat_card_num_piles = []
+        flat_pile_clear_bonus = []
+        for r in range(3):
+            for c in range(3):
+                flat_card_num_piles.extend(self.card_num_piles[r][c])
+                flat_pile_clear_bonus.append(self.pile_clear_bonus[r][c])
+
+        return hash((
+            tuple(flat_card_num_piles),
+            tuple(flat_pile_clear_bonus),
+            self.lucky_suit_idx,
+            self.discards_remaining,
+            frozenset(self.dead_card_nums)
+        ))
+
     def is_game_over(self):
         if self.discards_remaining > 0:
             for r in range(3):
@@ -110,6 +126,13 @@ class GameState:
     def is_pile_empty(self, r, c):
         return len(self.card_num_piles[r][c]) == 0
 
+    def is_board_empty(self):
+        for r in range(3):
+            for c in range(3):
+                if len(self.card_num_piles[r][c]) > 0:
+                    return False
+        return True
+
     def upcard_nums(self):
         upcard_nums = [[None] * 3 for r in range(3)]
         for r in range(3):
@@ -133,7 +156,7 @@ class GameState:
             for c in range(3):
                 if not self.is_pile_empty(r, c):
                     upcard = int_to_card(upcard_nums[r][c])
-                    row_repr += str(upcard) + f"(+{pile_sizes[r][c] - 1})" + " | "
+                    row_repr += str(upcard) + f"(+{int(pile_sizes[r][c] - 1)})" + " | "
                 else:
                     row_repr += "--(+0) | "
             row_repr += "\n"
