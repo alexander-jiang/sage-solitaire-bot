@@ -1,12 +1,18 @@
 from os import listdir
 from os.path import isfile, join
 import os
+import click
 import matplotlib.pyplot as plt
 import numpy as np
 
 
-def main():
-    game_records_dir = join("game_records", "random_agent")
+@click.command()
+@click.option(
+    "--record-directory", "-d", type=str, required=True,
+    help="Directory name where the game records have been saved"
+)
+def main(record_directory):
+    game_records_dir = record_directory
     game_files = [f for f in listdir(game_records_dir) if isfile(join(game_records_dir, f))]
 
     game_scores = []
@@ -14,10 +20,12 @@ def main():
 
     for game_file in game_files:
         with open(join(game_records_dir, game_file), "rb") as f:
+            # print(game_file)
             f.seek(-2, os.SEEK_END)
             while f.read(1) != b'\n':
                 f.seek(-2, os.SEEK_CUR)
             last_line = f.readline().decode()
+            # print(last_line)
 
             tokens = last_line.split(", ")
             for token in tokens:
@@ -37,7 +45,7 @@ def main():
     plt.hist(game_scores, bins="auto")
     plt.xlabel("Final Game Score")
     plt.ylabel("# Games")
-    plt.title(f"Final Score Distribution (agent=Random, n={len(game_scores)})")
+    plt.title(f"Final Score Distribution (n={len(game_scores)})")
     plt.show()
 
     max_score = np.max(game_scores)

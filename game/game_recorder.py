@@ -1,7 +1,7 @@
 import os
 import uuid
 import click
-from agent import GameAgent, RandomGameAgent
+from agent import GameAgent, RandomGameAgent, GreedyGameAgent
 from deck import int_to_card
 from gamestate import GameState
 

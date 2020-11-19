@@ -17,7 +17,7 @@ class GreedyGameAgent(GameAgent):
         actions = current_state.actions()
         max_reward = -1
         best_action = None
-        for action in current_state.actions:
+        for action in actions:
             piles, next_state, reward = action
             if reward > max_reward:
                 max_reward = reward
